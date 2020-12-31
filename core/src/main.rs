@@ -9,9 +9,8 @@ mod search_engine;
 mod etl;
 
 struct SearchEngine {
-    index: tantivy::Index,
-    reader: tantivy::IndexReader,
-    schema: tantivy::schema::Schema,
+    words: search_engine::Words,
+    phrases: search_engine::Phrases
 }
 
 #[derive(Deserialize)]
@@ -21,9 +20,8 @@ struct SearchQuery {
 
 #[get("/search")]
 async fn search(search_state: web::Data<SearchEngine>, input_data: web::Query<SearchQuery>) -> HttpResponse {
-    let search_result = format!("{}", search_engine::search(&search_state.index, 
-                                                                        &search_state.reader, 
-                                                                        &search_state.schema,
+    let search_result = format!("{}", search_engine::search(&search_state.words, 
+                                                                        &search_state.phrases,
                                                                         &input_data.query));
     return HttpResponse::Ok()
             .content_type("application/json")
@@ -33,10 +31,16 @@ async fn search(search_state: web::Data<SearchEngine>, input_data: web::Query<Se
 #[actix_web::main]
 async fn main() -> std::io::Result<()> {
     HttpServer::new(|| {
-        let schema = etl::init_schema();
-        let index = etl::init_index(&schema);
-        let reader = search_engine::init_reader(&index);
-        let search_state = SearchEngine{index, reader, schema};
+        let words_schema = etl::init_words_schema();
+        let words_index = etl::init_words_index(&words_schema);
+        let words = search_engine::Words{ reader: search_engine::init_words_reader(&words_index), schema: words_schema, index: words_index };
+
+        let phrases_schema = etl::init_phrases_schema();
+        let phrases_index = etl::init_phrases_index(&phrases_schema);
+        let phrases = search_engine::Phrases{ reader: search_engine::init_phrases_reader(&phrases_index), schema: phrases_schema, index: phrases_index };
+
+        let search_state = SearchEngine{words, phrases};
+
         let cors = Cors::default()
               .allowed_origin("http://localhost:8081")
               .allowed_methods(vec!["GET"])

@@ -4,7 +4,7 @@
       <input type="text" v-model="query">
     </div>
     <div v-for="(result, idx) in results" :key="idx">
-        <i>{{result}}</i>
+        <i class="text">{{result}}</i>
     </div>
   </div>
 </template>
@@ -21,7 +21,7 @@ export default {
   },
    watch: {
     query: function () {
-      axios.get('http://127.0.0.1:8000/search', {
+      axios.get('http://localhost:8000/search', {
             params: {
               query: this.query
             }
@@ -31,3 +31,12 @@ export default {
   }
 }
 </script>
+
+<style>
+body {
+    background-color: #1f1f1f;
+   }
+.text {
+  color: #dddddd;
+}
+</style>
