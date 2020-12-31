@@ -1,14 +1,16 @@
 from fastapi import FastAPI
 from fastapi.responses import JSONResponse
 from fastapi.middleware.cors import CORSMiddleware
-import requests
+import meilisearch
 
-CORE_URL = "http://127.0.0.1:8080/search"
+client = meilisearch.Client("http://127.0.0.1:7700", "masterKey")
+
+index = client.index('tracks')
 
 app = FastAPI()
 
 origins = [
-    "http://localhost:8081",
+    "http://localhost:8080",
 ]
 
 app.add_middleware(
@@ -20,9 +22,9 @@ app.add_middleware(
 )
 
 @app.get("/search")
-def read_item(query: str = None) -> JSONResponse:
-    if query is None:
-        return JSONResponse(content={"result": None})
+async def read_item(query: str = None) -> JSONResponse:
+    if query:
+        result = index.search(query)
+        return JSONResponse(content={"result": result["hits"]})
     else:
-        response = requests.get(CORE_URL, params={"query": query})
-        return JSONResponse(content=response.json())
+        return JSONResponse(content={"result": None})
