@@ -3,3 +3,4 @@
 **/raw/*
 **/.venv
 __pycache__
+**/web

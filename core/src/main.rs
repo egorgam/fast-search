@@ -42,7 +42,7 @@ async fn main() -> std::io::Result<()> {
         let search_state = SearchEngine{words, phrases};
 
         let cors = Cors::default()
-              .allowed_origin("http://localhost:8081")
+              .allowed_origin("http://localhost:8000")
               .allowed_methods(vec!["GET"])
               .allowed_header(http::header::CONTENT_TYPE)
               .max_age(3600);
@@ -51,7 +51,7 @@ async fn main() -> std::io::Result<()> {
         .data(search_state)
         .service(search)
     })
-    .bind("127.0.0.1:8080")?
+    .bind("127.0.0.1:8000")?
     .run()
     .await
 }
